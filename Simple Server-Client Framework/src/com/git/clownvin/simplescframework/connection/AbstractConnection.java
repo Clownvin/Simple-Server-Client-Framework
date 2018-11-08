@@ -49,7 +49,6 @@ public abstract class AbstractConnection {
 
 	public AbstractConnection(final Socket socket) throws IOException {
 		setSocket(socket);
-		setupThreads();
 	}
 	
 	private void setSocket(Socket socket) throws IOException {
