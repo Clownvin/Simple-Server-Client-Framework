@@ -82,7 +82,7 @@ public abstract class PrivateConnection extends AbstractConnection {
 		}
 	}
 	
-	public final byte[] decrypt(final byte[] data) throws InterruptedException, KeyExchangeIncompleteException {
+	public final byte[] decrypt(final byte[] data) throws KeyExchangeIncompleteException {
 		Key key = generateKey();
 		Cipher cipher;
 		try {
