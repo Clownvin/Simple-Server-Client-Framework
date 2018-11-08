@@ -17,8 +17,6 @@ public abstract class AbstractConnection {
 						break;
 					if(Thread.interrupted())
 						break;
-				} catch (InterruptedException e) {
-					break;
 				} catch (Exception e) {
 					e.printStackTrace(); // Don't want connection to stop because of a runaway exception.
 				}
@@ -37,8 +35,6 @@ public abstract class AbstractConnection {
 						break;
 					if(Thread.interrupted())
 						break;
-				} catch (InterruptedException e) {
-					break;
 				} catch (Exception e) {
 					e.printStackTrace(); // Don't want connection to stop because of a runaway exception.
 				}
@@ -127,7 +123,7 @@ public abstract class AbstractConnection {
 		return socket;
 	}
 	
-	public abstract boolean readInput() throws InterruptedException;
+	public abstract boolean readInput();
 	
-	public abstract boolean writeOutput() throws InterruptedException;
+	public abstract boolean writeOutput();
 }
