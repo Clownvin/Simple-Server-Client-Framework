@@ -15,6 +15,8 @@ public abstract class AbstractConnection {
 				try {
 					if(!readInput())
 						break;
+					if(Thread.interrupted())
+						break;
 				} catch (InterruptedException e) {
 					break;
 				} catch (Exception e) {
@@ -32,6 +34,8 @@ public abstract class AbstractConnection {
 			while (!kill) { //TODO TODO TODO TODO Implement outputLock.wait() here? 
 				try {
 					if(!writeOutput())
+						break;
+					if(Thread.interrupted())
 						break;
 				} catch (InterruptedException e) {
 					break;
