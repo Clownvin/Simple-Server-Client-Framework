@@ -89,6 +89,7 @@ public abstract class AbstractConnection {
 	public final void kill() throws IOException {
 		if (kill)
 			return;
+		onKill();
 		kill = true;
 		inputStream.close();
 		outputStream.close();
@@ -99,6 +100,8 @@ public abstract class AbstractConnection {
 		packetWriterThread.interrupt();
 		socket.close();
 	}
+	
+	public abstract void onKill();
 	
 	/** A project for a rainy day. This shit don't want to work.
 	public final void reconnect() throws IOException {
