@@ -49,7 +49,7 @@ public abstract class AbstractServer implements Runnable {
 	
 	public abstract void atStop();
 	
-	public boolean running() {
+	public boolean isRunning() {
 		return !stop;
 	}
 
@@ -59,7 +59,7 @@ public abstract class AbstractServer implements Runnable {
 		for (var port : ports) {
 			ConnectionAcceptor.start(port);
 		}
-		while (running()) {
+		while (isRunning()) {
 			try {
 				duringLoop();
 			} catch (InterruptedException e) {
