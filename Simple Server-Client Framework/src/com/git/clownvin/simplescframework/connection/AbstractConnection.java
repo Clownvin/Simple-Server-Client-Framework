@@ -89,8 +89,8 @@ public abstract class AbstractConnection {
 	public final void kill() throws IOException {
 		if (kill)
 			return;
-		onKill();
 		kill = true;
+		onKill();
 		inputStream.close();
 		outputStream.close();
 		synchronized (outputLock) {
