@@ -55,10 +55,10 @@ public abstract class AbstractServer implements Runnable {
 
 	@Override
 	public void run() {
-		atStart();
 		for (var port : ports) {
 			ConnectionAcceptor.start(port);
 		}
+		atStart();
 		while (isRunning()) {
 			try {
 				duringLoop();

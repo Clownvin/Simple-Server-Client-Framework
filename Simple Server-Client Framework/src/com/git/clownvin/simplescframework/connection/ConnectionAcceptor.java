@@ -137,6 +137,7 @@ public final class ConnectionAcceptor implements Runnable {
 		} catch (IOException e) {
 			System.err.println("Failed to bind socket on port: " + port + ". Check if it is already bound to another program.");
 			e.printStackTrace();
+			System.exit(3);
 		}
 	}
 }

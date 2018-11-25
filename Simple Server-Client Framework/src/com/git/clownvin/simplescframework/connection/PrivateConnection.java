@@ -82,13 +82,13 @@ public abstract class PrivateConnection extends AbstractConnection {
 		}
 	}
 	
-	public final byte[] decrypt(final byte[] data) throws KeyExchangeIncompleteException {
+	public final byte[] decrypt(final byte[] data, final int length) throws KeyExchangeIncompleteException {
 		Key key = generateKey();
 		Cipher cipher;
 		try {
 			cipher = Cipher.getInstance(ALGORITHM);
 			cipher.init(Cipher.DECRYPT_MODE, key);
-			return cipher.doFinal(data);
+			return cipher.doFinal(data, 0, length);
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 			throw new RuntimeException(e);
 		}
