@@ -1,6 +1,10 @@
 package com.git.clownvin.simplescframework;
 
+import java.util.function.Consumer;
+
+import com.git.clownvin.simplescframework.connection.AbstractConnection;
 import com.git.clownvin.simplescframework.connection.ConnectionAcceptor;
+import com.git.clownvin.simplescframework.connection.ConnectionFactory;
 
 public abstract class AbstractServer implements Runnable {
 	protected final int[] ports;
@@ -52,12 +56,21 @@ public abstract class AbstractServer implements Runnable {
 	public boolean isRunning() {
 		return !stop;
 	}
+	
+	protected abstract ConnectionFactory getConnectionFactory(int port);
+	
+	protected abstract Consumer<AbstractConnection> getConnectionConsumer(int port);
+	
+	protected void setupConnectionAcceptors() {
+		for (var port : ports) {
+			ConnectionAcceptor.start(port, getConnectionFactory(port));
+			ConnectionAcceptor.get(port).setConnectionConsumer(getConnectionConsumer(port));
+		}
+	}
 
 	@Override
 	public void run() {
-		for (var port : ports) {
-			ConnectionAcceptor.start(port);
-		}
+		setupConnectionAcceptors();
 		atStart();
 		while (isRunning()) {
 			try {

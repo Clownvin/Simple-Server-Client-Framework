@@ -1,12 +1,10 @@
 package com.git.clownvin.simplescframework.connection;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.Hashtable;
+import java.util.function.Consumer;
 
 /**
  * 
@@ -17,19 +15,7 @@ import java.util.function.BiConsumer;
  */
 public final class ConnectionAcceptor implements Runnable {
 	
-	private static BiConsumer<AbstractConnection, Integer> onConnectionAccept = (c, p) -> { System.out.println("Accepted " + c + " on port " + p);};
-	
-	private static final List<ConnectionAcceptor> acceptors = new ArrayList<>();
-	
-	private static Class<? extends AbstractConnection> connectionClass = AbstractConnection.class;
-	
-	public static void setConnectionClass(final Class<? extends AbstractConnection> connectionClass) {
-		ConnectionAcceptor.connectionClass = connectionClass;
-	}
-	
-	public static void setOnConnectConsumer(BiConsumer<AbstractConnection, Integer> onConnectionAccept) {
-		ConnectionAcceptor.onConnectionAccept = onConnectionAccept;
-	}
+	private static final Hashtable<Integer, ConnectionAcceptor> acceptors = new Hashtable<>();
 
 	/**
 	 * Creates a new thread that runs the singleton object, and starts it.
@@ -37,67 +23,69 @@ public final class ConnectionAcceptor implements Runnable {
 	 * @param port
 	 *            port with which to listen for incoming connections on.
 	 */
-	public static void start(final int port) {
-		if (connectionClass.equals(AbstractConnection.class))
-			throw new RuntimeException("You must specify a class which extends AbstractConnection for ConnectionAcceptor to build Connection objects from!");
+	public static void start(final int port, final ConnectionFactory factory) {
 		synchronized (acceptors) {
-			for (var acceptor : acceptors) {
-				if (acceptor.port == port)
-					throw new RuntimeException("Port "+port+" is already being listened on!");
-			}
+			if (acceptors.containsKey(port))
+				throw new RuntimeException("Port "+port+" is already being listened on!");
 		}
-		var acceptor = new ConnectionAcceptor(port);
+		var acceptor = new ConnectionAcceptor(port, factory);
 		var thread = new Thread(acceptor); // New thread.
 		thread.setName("ConnectionAcceptor(port " + port + ")"); // Set name so it can be identified easily.
 		thread.start(); // Start thread.
 		synchronized (acceptors) {
-			acceptors.add(acceptor);
+			acceptors.put(port, acceptor);
 		}
+	}
+	
+	public static ConnectionAcceptor get(int port) {
+		return acceptors.get(port);
 	}
 
 	public static void stop(final int port) {
 		synchronized (acceptors) {
-			var _acceptor = new ConnectionAcceptor(-1);
-			for (var acceptor : acceptors) {
-				if (acceptor.port != port)
-					continue;
-				acceptor.stop();
-				_acceptor = acceptor;
-				break;
-			}
-			acceptors.remove(_acceptor);
+			var acceptor = acceptors.get(port);
+			if (acceptor == null)
+				return;
+			acceptor.stop();
+			acceptors.remove(port);
 		}
 	}
 	
 	public static void stopAll() {
 		synchronized (acceptors) {
-			for (var acceptor : acceptors) {
-				acceptor.stop();
+			for (var acceptorKey : acceptors.keySet()) {
+				acceptors.get(acceptorKey).stop();
 			}
 			acceptors.clear();
 		}
 	}
 
+	private Consumer<AbstractConnection> onConnectionAccept = (c) -> { System.out.println("Default Consumer: Accepted " + c + " on port " + c.getSocket().getPort()); };
+	
 	private final int port;
+	private final ConnectionFactory factory;
 	
 	private boolean stop = false;
 	private volatile boolean awaitingConnection = false;
 
-	private ConnectionAcceptor(final int port) {
+	private ConnectionAcceptor(final int port, final ConnectionFactory factory) {
 		// Can only be instantiated internally.
 		this.port = port;
+		this.factory = factory;
+	}
+	
+	public void setConnectionConsumer(Consumer<AbstractConnection> onConnectionAccept) {
+		this.onConnectionAccept = onConnectionAccept;
 	}
 	
 	private void stop() {
 		stop = true;
 		if (!awaitingConnection)
 			return;
-		try {
-			connectionClass.getConstructor(Socket.class).newInstance(new Socket("localhost", port)); //Force a connection to exit the blocking "accept" call.
+		try (Socket socket = new Socket("localhost", port)){
+			//Force a connection to exit the blocking "accept" call.
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -111,19 +99,16 @@ public final class ConnectionAcceptor implements Runnable {
 			while (!stop && !acceptorSocket.isClosed()) { // While open and server is running..
 				try {
 					awaitingConnection = true;
-					var connection = connectionClass.getConstructor(Socket.class).newInstance(acceptorSocket.accept());
+					AbstractConnection connection = factory.createConnection(acceptorSocket.accept());
 					awaitingConnection = false;
 					if (stop) {
 						connection.kill();
 						break;
 					}
-					onConnectionAccept.accept(connection, port);
+					onConnectionAccept.accept(connection);
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.err.println("Failed to accept new connection...");
-					//TODO you were here
-				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-					e.printStackTrace();
 				}
 			}
 			System.out.println("Stopping acceptor on port: " + port);
