@@ -23,7 +23,7 @@ public final class ConnectionAcceptor implements Runnable {
 	 * @param port
 	 *            port with which to listen for incoming connections on.
 	 */
-	public static void start(final int port, final ConnectionFactory factory) {
+	public static void start(final int port, final IConnectionFactory factory) {
 		synchronized (acceptors) {
 			if (acceptors.containsKey(port))
 				throw new RuntimeException("Port "+port+" is already being listened on!");
@@ -63,12 +63,12 @@ public final class ConnectionAcceptor implements Runnable {
 	private Consumer<AbstractConnection> onConnectionAccept = (c) -> { System.out.println("Default Consumer: Accepted " + c + " on port " + c.getSocket().getPort()); };
 	
 	private final int port;
-	private final ConnectionFactory factory;
+	private final IConnectionFactory factory;
 	
 	private boolean stop = false;
 	private volatile boolean awaitingConnection = false;
 
-	private ConnectionAcceptor(final int port, final ConnectionFactory factory) {
+	private ConnectionAcceptor(final int port, final IConnectionFactory factory) {
 		// Can only be instantiated internally.
 		this.port = port;
 		this.factory = factory;
@@ -99,7 +99,7 @@ public final class ConnectionAcceptor implements Runnable {
 			while (!stop && !acceptorSocket.isClosed()) { // While open and server is running..
 				try {
 					awaitingConnection = true;
-					AbstractConnection connection = factory.createConnection(acceptorSocket.accept());
+					var connection = factory.createConnection(acceptorSocket.accept());
 					awaitingConnection = false;
 					if (stop) {
 						connection.kill();

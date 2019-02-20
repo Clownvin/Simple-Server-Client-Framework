@@ -71,7 +71,7 @@ public abstract class PrivateConnection extends AbstractConnection {
 	}
 	
 	public final byte[] encrypt(final byte[] data) throws KeyExchangeIncompleteException {
-		Key key = generateKey();
+		var key = generateKey();
 		try {
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
 			cipher.init(Cipher.ENCRYPT_MODE, key);
@@ -83,7 +83,7 @@ public abstract class PrivateConnection extends AbstractConnection {
 	}
 	
 	public final byte[] decrypt(final byte[] data, final int length) throws KeyExchangeIncompleteException {
-		Key key = generateKey();
+		var key = generateKey();
 		Cipher cipher;
 		try {
 			cipher = Cipher.getInstance(ALGORITHM);

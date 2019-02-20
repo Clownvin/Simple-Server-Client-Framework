@@ -3,6 +3,6 @@ package com.git.clownvin.simplescframework.connection;
 import java.io.IOException;
 import java.net.Socket;
 
-public interface ConnectionFactory {
+public interface IConnectionFactory {
 	public AbstractConnection createConnection(Socket socket) throws IOException;
 }
