@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 import com.git.clownvin.simplescframework.connection.AbstractConnection;
 import com.git.clownvin.simplescframework.connection.ConnectionAcceptor;
-import com.git.clownvin.simplescframework.connection.IConnectionFactory;
+import com.git.clownvin.simplescframework.connection.ConnectionFactory;
 
 public abstract class AbstractServer implements Runnable {
 	protected final int[] ports;
@@ -57,7 +57,7 @@ public abstract class AbstractServer implements Runnable {
 		return !stop;
 	}
 	
-	protected abstract IConnectionFactory getConnectionFactory(int port);
+	protected abstract ConnectionFactory getConnectionFactory(int port);
 	
 	protected abstract Consumer<AbstractConnection> getConnectionConsumer(int port);
 	
