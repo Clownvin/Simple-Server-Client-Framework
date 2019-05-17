@@ -1,6 +1,6 @@
-package com.git.clownvin.simplescframework;
+package com.git.clownvin.sscf;
 
-import com.git.clownvin.simplescframework.connection.AbstractConnection;
+import com.git.clownvin.sscf.connection.AbstractConnection;
 
 /**
  * 
@@ -8,18 +8,22 @@ import com.git.clownvin.simplescframework.connection.AbstractConnection;
  *
  */
 public abstract class AbstractClient<ConnectionT extends AbstractConnection> implements Runnable {
-	protected final String name;
-	protected volatile boolean stop, stopped = true;
+   protected String destination = "localhost";
+   protected int port = 6969;
+	protected volatile boolean connected, stop, stopped = true;
 	protected Thread clientThread;
 	protected ConnectionT connection;
 	
-	public AbstractClient(ConnectionT connection) {
-		this("Client", connection);
+	public AbstractClient(String destination, int port) {
+	   this.destination = destination;
+	   this.port = port;
 	}
 	
-	public AbstractClient(final String name, final ConnectionT connection) {
-		this.name = name;
-		this.connection = connection;
+	public AbstractClient(ConnectionT connection) {
+	   this.connection = connection;
+	   destination = connection.getSocket().getInetAddress().getHostAddress();
+	   port = connection.getSocket().getPort();
+	   connected = true;
 	}
 	
 	public abstract void atStart();
@@ -34,7 +38,7 @@ public abstract class AbstractClient<ConnectionT extends AbstractConnection> imp
 		}
 		stopped = stop = false;
 		clientThread = new Thread(this);
-		clientThread.setName(name+":ClientThread");
+		clientThread.setName("ClientThread");
 		clientThread.start();
 	}
 	
@@ -48,13 +52,24 @@ public abstract class AbstractClient<ConnectionT extends AbstractConnection> imp
 	
 	@Override
 	public String toString() {
-		return name;
+		return null;
 	}
+	
+	public abstract void reconnect();
 	
 	@Override
 	public void run() {
 		atStart();
 		while (!stop) {
+		   if (!connected) {
+		      try {
+		         reconnect();
+		      } finally {
+		         if (!connected || Thread.interrupted()) { // Either failed to reconnect or caught early.
+		            stop();
+		         }
+		      }
+		   }
 			try {
 				duringLoop();
 			} catch (InterruptedException e) {

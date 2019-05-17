@@ -1,4 +1,4 @@
-package com.git.clownvin.simplescframework.connection;
+package com.git.clownvin.sscf.connection;
 
 public class KeyExchangeIncompleteException extends Exception {
 

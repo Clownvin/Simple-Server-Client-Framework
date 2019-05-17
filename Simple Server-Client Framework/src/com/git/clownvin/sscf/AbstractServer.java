@@ -1,10 +1,10 @@
-package com.git.clownvin.simplescframework;
+package com.git.clownvin.sscf;
 
 import java.util.function.Consumer;
 
-import com.git.clownvin.simplescframework.connection.AbstractConnection;
-import com.git.clownvin.simplescframework.connection.ConnectionAcceptor;
-import com.git.clownvin.simplescframework.connection.ConnectionFactory;
+import com.git.clownvin.sscf.connection.AbstractConnection;
+import com.git.clownvin.sscf.connection.ConnectionAcceptor;
+import com.git.clownvin.sscf.connection.ConnectionFactory;
 
 public abstract class AbstractServer implements Runnable {
 	protected final int[] ports;

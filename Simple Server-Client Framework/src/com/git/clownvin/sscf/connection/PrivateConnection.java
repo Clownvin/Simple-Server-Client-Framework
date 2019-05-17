@@ -1,4 +1,4 @@
-package com.git.clownvin.simplescframework.connection;
+package com.git.clownvin.sscf.connection;
 
 import java.io.IOException;
 import java.net.Socket;
